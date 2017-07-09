@@ -148,3 +148,78 @@ AddEventHandler("vmenu:giveDCash_s", function(netID, cash)
 		end
 	end)
 end)
+
+----------
+--COFFRE--
+----------
+
+RegisterServerEvent("vmenu:getCoffrePolice_s")
+AddEventHandler("vmenu:getCoffrePolice_s", function()
+	MySQL.Async.fetchAll("SELECT * FROM coffres WHERE id_coffre = @name", {['@name'] = 'coffre_police'}, function (resultn)
+		local moneycoffrepolice = resultn[1].money
+		local dmoneycoffrepolice = resultn[1].dirtymoney
+        TriggerClientEvent("vmenu:getCoffrePolice", source, moneycoffrepolice, dmoneycoffrepolice)
+	end)
+end)
+
+RegisterServerEvent("vmenu:takeMoneyPolice_s")
+AddEventHandler("vmenu:takeMoneyPolice_s", function(amountpolice)
+	TriggerEvent('es:getPlayerFromId', source, function(user)
+	amount_police = amountpolice
+	MySQL.Async.fetchAll("SELECT * FROM coffres WHERE id_coffre = @name", {['@name'] = 'coffre_police'}, function (result)
+	if tonumber(amount_police) <= tonumber(result[1].money) then
+		MySQL.Async.execute("UPDATE coffres SET `money`=@value WHERE id_coffre = @identifier", {['@value'] = (tonumber(result[1].money)-tonumber(amountpolice)), ['@identifier'] = 'coffre_police'})
+		user:addMoney(amount_police)
+	else
+		TriggerClientEvent("itinerance:notif", source, "~r~Votre entreprise n'est pas aussi riche...")
+	end
+	end)
+	end)
+end)
+
+RegisterServerEvent("vmenu:takeDMoneyPolice_s")
+AddEventHandler("vmenu:takeDMoneyPolice_s", function(amountpolice)
+	TriggerEvent('es:getPlayerFromId', source, function(user)
+	amount_police = amountpolice
+	MySQL.Async.fetchAll("SELECT * FROM coffres WHERE id_coffre = @name", {['@name'] = 'coffre_police'}, function (result)
+	if tonumber(amount_police) <= tonumber(result[1].dirtymoney) then
+		MySQL.Async.execute("UPDATE coffres SET `dirtymoney`=@value WHERE id_coffre = @identifier", {['@value'] = (tonumber(result[1].dirtymoney)-tonumber(amountpolice)), ['@identifier'] = 'coffre_police'})
+		user:addDMoney(amount_police)
+	else
+		TriggerClientEvent("itinerance:notif", source, "~r~Votre entreprise n'est pas aussi riche...")
+	end
+	end)
+	end)
+end)
+
+RegisterServerEvent("vmenu:depositMoneyPolice_s")
+AddEventHandler("vmenu:depositMoneyPolice_s", function(amountpolice)
+	TriggerEvent('es:getPlayerFromId', source, function(user)
+	player = user.identifier
+	amount_police = amountpolice
+	MySQL.Async.fetchAll("SELECT * FROM coffres WHERE id_coffre = @name", {['@name'] = 'coffre_police'}, function (result)
+	if tonumber(amount_police) <= tonumber(user.money) then
+		MySQL.Async.execute("UPDATE coffres SET `money`=@value WHERE id_coffre = @identifier", {['@value'] = (tonumber(result[1].money)+tonumber(amountpolice)), ['@identifier'] = 'coffre_police'})
+		user:removeMoney(amount_police)
+	else
+		TriggerClientEvent("itinerance:notif", source, "~r~Vous n'avez pas cet argent !")
+	end
+	end)
+	end)
+end)
+
+RegisterServerEvent("vmenu:depositDMoneyPolice_s")
+AddEventHandler("vmenu:depositDMoneyPolice_s", function(amountpolice)
+	TriggerEvent('es:getPlayerFromId', source, function(user)
+	player = user.identifier
+	amount_police = amountpolice
+	MySQL.Async.fetchAll("SELECT * FROM coffres WHERE id_coffre = @name", {['@name'] = 'coffre_police'}, function (result)
+	if tonumber(amount_police) <= tonumber(user.dirtymoney) then
+		MySQL.Async.execute("UPDATE coffres SET `dirtymoney`=@value WHERE id_coffre = @identifier", {['@value'] = (tonumber(result[1].dirtymoney)+tonumber(amountpolice)), ['@identifier'] = 'coffre_police'})
+		user:removeDMoney(amount_police)
+	else
+		TriggerClientEvent("itinerance:notif", source, "~r~Vous n'avez pas cet argent !")
+	end
+	end)
+	end)
+end)
