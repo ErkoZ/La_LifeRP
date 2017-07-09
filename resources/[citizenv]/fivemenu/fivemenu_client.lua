@@ -78,6 +78,7 @@ VMenu = {
 	barbershop = false,
 	hospital = false,
 	outfitshop = false,
+	coffre_police = false,
 	garagepolice = false,
 	garagehelicopolice = false,
 	garagehelicoambulance = false,
@@ -1099,6 +1100,12 @@ function Construct()
 		VMenu.AddSep(menu, "Vous devez être en ambulancier")
 	end
 
+	local menu = 20
+	VMenu.AddMenu(menu, "", "default") -- default = Header "Texte" sur fond bleu
+	TriggerServerEvent('vmenu:updateUser', 20)
+	Citizen.Wait(100)
+	VMenu.AddSep(menu, "Une erreur s'est produite !")
+	
 	------- MAIN MENU F7
 	local menu = 98
 	VMenu.AddMenu(menu, "", "default") -- default = Header "Texte" sur fond bleu
@@ -1149,6 +1156,59 @@ function getMainMenu()
 		end
 	end
 end
+
+-----------
+-- COFFRE--
+-----------
+
+RegisterNetEvent("vmenu:getCoffrePolice")
+AddEventHandler("vmenu:getCoffrePolice", function(moneypolice, dmoneypolice)
+	VMenu.coffre_police = true
+	moneypolicen = moneypolice
+	dmoneypolicen = dmoneypolice
+	getCoffrePolice()
+end)
+
+function getCoffrePolice()
+	TriggerServerEvent('vmenu:updateUser', 20)
+	Wait(100)
+	VMenu.ResetMenu(20, "", "default")
+	VMenu.AddSep(20, "~g~Argent: ~w~"..moneypolicen)
+	VMenu.AddSep(20, "~r~Argent sale: ~w~" ..dmoneypolicen)
+	VMenu.AddNum1000(20, "Montant sélectionné: ", "AmountPolice", 0, 100000, "Montant à prendre en compte")
+	VMenu.AddFunc(20, "Prendre de l'argent", "vmenu:takeMoneyPolice", {getOpt("AmountPolice")}, lang.common.access)
+	VMenu.AddFunc(20, "Prendre de l'argent sale", "vmenu:takeDMoneyPolice", {getOpt("AmountPolice")}, lang.common.access)
+	VMenu.AddFunc(20, "Déposer de l'argent", "vmenu:depositMoneyPolice", {getOpt("AmountPolice")}, lang.common.access)
+	VMenu.AddFunc(20, "Déposer de l'argent sale", "vmenu:depositDMoneyPolice", {getOpt("AmountPolice")}, lang.common.access)
+end
+
+RegisterNetEvent("vmenu:takeMoneyPolice")
+AddEventHandler("vmenu:takeMoneyPolice", function(target, amountpolice)
+	amount_police = tonumber(amountpolice)
+	TriggerServerEvent("vmenu:takeMoneyPolice_s", amount_police)
+end)
+
+RegisterNetEvent("vmenu:takeDMoneyPolice")
+AddEventHandler("vmenu:takeDMoneyPolice", function(target, amountpolice)
+	amount_police = tonumber(amountpolice)
+	TriggerServerEvent("vmenu:takeDMoneyPolice_s", amount_police)
+end)
+
+RegisterNetEvent("vmenu:depositMoneyPolice")
+AddEventHandler("vmenu:depositMoneyPolice", function(target, amountpolice)
+	amount_police = tonumber(amountpolice)
+	TriggerServerEvent("vmenu:depositMoneyPolice_s", amount_police)
+end)
+
+RegisterNetEvent("vmenu:depositDMoneyPolice")
+AddEventHandler("vmenu:depositDMoneyPolice", function(target, amountpolice)
+	amount_police = tonumber(amountpolice)
+	TriggerServerEvent("vmenu:depositDMoneyPolice_s", amount_police)
+end)
+
+----------
+----------
+----------
 
 function getGaragePolice()
 	TriggerServerEvent('vmenu:updateUser', 7)
@@ -1381,6 +1441,15 @@ Citizen.CreateThread(function()
 				end
 			end
 
+			if VMenu.coffre_police then
+				if VOpts.toUpdate == "AmountPolice" then
+					VMenu.EditFunc(20, "Prendre de l'argent", "vmenu:takeMoneyPolice", {getOpt("AmountPolice")}, lang.common.access)
+					VMenu.EditFunc(20, "Prendre de l'argent sale", "vmenu:takeDMoneyPolice", {getOpt("AmountPolice")}, lang.common.access)
+					VMenu.EditFunc(20, "Déposer de l'argent", "vmenu:depositMoneyPolice", {getOpt("AmountPolice")}, lang.common.access)
+					VMenu.EditFunc(20, "Déposer de l'argent sale", "vmenu:depositDMoneyPolice", {getOpt("AmountPolice")}, lang.common.access)
+				end
+			end
+					
 			if VMenu.police then
 				if VOpts.toUpdate == "Amcon" then
 					VMenu.EditFunc(98, "Donner contravention", "menupolice:givecon", {getOpt("Amcon")}, "Accéder")
@@ -1772,6 +1841,8 @@ Citizen.CreateThread(function()
 			VMenu.Frigorifique_company = true
 		elseif (IsNearPoints(Log_company, 3) == true) then
 			VMenu.Log_company = true
+		elseif (IsNearPoints(coffre_police, 2) == true) then
+			VMenu.coffre_police = true
 		elseif (IsNearPoints(Garage_police, 5) == true) then
 			VMenu.garagepolice = true
 		elseif (IsNearPoints(Garage_helico_police, 5) == true) then
@@ -1881,6 +1952,11 @@ Citizen.CreateThread(function()
 				end
 			elseif (IsNearPoints(Armory, 2) == true and User.police >= 1) then
 				TriggerEvent("vmenu:openMenu", 6)
+			elseif (IsNearPoints(coffre_police, 2) == true and User.police >= 4) then
+				TriggerEvent("vmenu:openMenu", 20)
+				if VMenu.coffre_police == false then
+					TriggerServerEvent('vmenu:getCoffrePolice_s')
+				end
 			elseif (IsNearPoints(Garage_police, 4) == true and User.police >= 1) then
 				TriggerEvent("vmenu:openMenu", 7)
 				if VMenu.garagepolice == false then
@@ -1975,6 +2051,9 @@ Citizen.CreateThread(function()
 			VMenu.Info('Appuyer sur ~g~F6~s~ pour accéder aux casiers', false)
 		elseif (IsNearPoints(Armory, 2) == true and User.police >= 1) then
 			VMenu.Info("Appuyer sur ~g~F6~s~ pour accéder à l'armurerie", false)
+		elseif (IsNearPoints(coffre_police, 2) == true and User.police >= 6) then
+			VMenu.coffre_police = false
+			VMenu.Info('~w~Appuyez sur ~g~F6~w~ pour ~b~accéder au coffre~w~.', false)
 		elseif (IsNearPoints(Garage_police, 5) == true and User.police >= 1) then
 			VMenu.garagepolice = false
 			VMenu.Info('Appuyer sur ~g~F6~s~ pour accéder au garage', false)
