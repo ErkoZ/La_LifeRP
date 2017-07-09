@@ -106,6 +106,10 @@ Armory = {
   {name="Pole Emploi", colour=15, id=351, x=452.371, y=-980.028, z=30.689},
 }
 
+coffre_police = {
+  { ['x'] = 450.97305297852, ['y'] = -973.41815185547, ['z'] = 30.689603805542 }
+}
+
 Garage_police = {
   {name="Pole Emploi", colour=15, id=351, x=453.746, y=-1017.653, z=28.450},
 }
