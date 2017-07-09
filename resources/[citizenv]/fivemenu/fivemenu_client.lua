@@ -789,6 +789,31 @@ function VMenu.notif(text)
 	DrawNotification(false, false)
 end
 
+RegisterNetEvent("vmenu:identity")
+AddEventHandler("vmenu:identity", function()
+	showId = true
+	while true do
+		Citizen.Wait(0)
+			if (showId == true) then
+				DrawRect(0.862, 0.292, 0.18, 0.3, 0, 0, 0, 150)
+				DrawAdvancedText(0.902000000000001, 0.220, 0.005, 0.0028, 0.7, "~h~Carte d'identité", 255, 255, 255, 255, 1, 1)
+				DrawAdvancedText(0.874000000000001, 0.278, 0.005, 0.0028, 0.4, "~b~Nom: ~w~" ..User.nom.. " " ..User.prenom, 255, 255, 255, 255, 6, 1)
+				DrawAdvancedText(0.874000000000001, 0.298, 0.005, 0.0028, 0.4, "~b~Numéro de teléphone: ~w~" ..User.telephone, 255, 255, 255, 255, 6, 1)
+				DrawAdvancedText(0.874000000000001, 0.318, 0.005, 0.0028, 0.4, "~y~Métier: ~w~" ..jobsname[User.job], 255, 255, 255, 255, 6, 1)
+			end
+	end
+end)
+
+Citizen.CreateThread(function()
+	while true do
+		Citizen.Wait(0)
+		if showId == true then
+			Citizen.Wait(20000)
+			showId = false
+		end
+	end
+end)
+
 RegisterNetEvent("vmenu:toggleMenu")
 AddEventHandler("vmenu:toggleMenu", function()
 	-- Update Server avant ouverture
@@ -1135,15 +1160,11 @@ function getMainMenu()
 		TriggerServerEvent("inventory:getItems_s")
 		VMenu.ResetMenu(98, "", "default")
 		Wait(10)
-		VMenu.AddSep(98, User.prenom .. " " .. User.nom)
-		VMenu.AddSep(98, lang.menu.mainmenu.tel .. User.telephone)
 		-- LE MENU DE LA POLICE
 		if User.police > 0 then
 			VMenu.AddFunc(98, lang.menu.mainmenu.police, "menupolice:PoliceOG", {User.police}, lang.common.access)
 		end
-		-- 	lE MENU SELON LA JOB
-		VMenu.AddSep(98, jobsname[User.job])
-
+		VMenu.AddFunc(98, "Carte d'identité", "vmenu:identity", {}, lang.common.access)
 		VMenu.AddFunc(98, lang.menu.mainmenu.anim, "menuanim:AnimOG", {}, lang.common.access)
 		VMenu.AddFunc(98, lang.menu.mainmenu.reper, "menutel:PhoneOG", {User.telephone}, lang.common.access)
 		VMenu.AddFunc(98, lang.menu.mainmenu.givecash, "vmenu:giveCash", {User.money}, lang.common.access)
